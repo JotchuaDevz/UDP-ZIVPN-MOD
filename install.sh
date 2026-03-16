@@ -641,7 +641,7 @@ instalar_script_gestor() {
     local _enlace_simbolico="/usr/local/bin/udpmod"
 
     echo -ne "$(tamarillo)  ➜ Descargando script del gestor...$(treset)"
-    curl -s -o "$_script_gestor" "https://raw.githubusercontent.com/JotchuaDevz/JT-UDP-DEV/refs/heads/main/menu.sh"
+    curl -s -o "$_script_gestor" "https://raw.githubusercontent.com/JotchuaDevz/UDP-ZIVPN-MOD/refs/heads/main/menu.sh"
     chmod +x "$_script_gestor"
     ln -sf "$_script_gestor" "$_enlace_simbolico"
     echo -e " $(tverde)✓$(treset)"
