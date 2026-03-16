@@ -176,31 +176,6 @@ cambiar_servidor() {
     limpiar_despues_de_comando
 }
 
-cambiar_obfs() {
-    echo -e "\n${C}  Ingresa el nuevo metodo OBFS:${NC}"
-    read -r metodo_obfs
-    jq ".obfs = \"$metodo_obfs\"" "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-    echo -e "${G}  OBFS cambiado a $metodo_obfs.${NC}"
-    reiniciar_servidor
-    limpiar_despues_de_comando
-}
-
-cambiar_insecure() {
-    local actual=$(jq -r ".insecure" "$CONFIG_FILE")
-    echo -e "\n${C}  Valor actual de insecure: ${Y}$actual${NC}"
-    echo -e "${G}  [1]${NC} true   ${G}[2]${NC} false"
-    read -r opcion_insecure
-    case $opcion_insecure in
-        1) valor_insecure="true" ;;
-        2) valor_insecure="false" ;;
-        *) echo -e "${R}  Opcion invalida.${NC}"; limpiar_despues_de_comando; return ;;
-    esac
-    jq ".insecure = $valor_insecure" "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-    echo -e "${G}  Insecure cambiado a $valor_insecure.${NC}"
-    reiniciar_servidor
-    limpiar_despues_de_comando
-}
-
 reiniciar_servidor() {
     systemctl restart hysteria-server
     if [[ $? -eq 0 ]]; then
@@ -274,8 +249,6 @@ mostrar_menu() {
     echo -e "${G}  [${W}5${G}]${NC}  Cambiar velocidad de subida"
     echo -e "${G}  [${W}6${G}]${NC}  Cambiar velocidad de bajada"
     echo -e "${G}  [${W}7${G}]${NC}  Cambiar dominio"
-    echo -e "${G}  [${W}8${G}]${NC}  Cambiar OBFS"
-    echo -e "${G}  [${W}9${G}]${NC}  Cambiar insecure"
     echo -e "${Y}  ────────────────────────────────────────────${NC}"
     echo -e "${R}  [${W}10${R}]${NC} Desinstalar"
     echo -e "${R}  [${W}0${R}]${NC}  Salir"
@@ -295,9 +268,12 @@ while true; do
         5)  cambiar_velocidad_subida ;;
         6)  cambiar_velocidad_bajada ;;
         7)  cambiar_servidor ;;
-        8)  cambiar_obfs ;;
-        9)  cambiar_insecure ;;
         10) desinstalar_servidor ;;
+        0)  clear; exit 0 ;;
+        *)  echo -e "${R}  Opcion invalida.${NC}"; limpiar_despues_de_comando ;;
+    esac
+done
+        8)  desinstalar_servidor ;;
         0)  clear; exit 0 ;;
         *)  echo -e "${R}  Opcion invalida.${NC}"; limpiar_despues_de_comando ;;
     esac
