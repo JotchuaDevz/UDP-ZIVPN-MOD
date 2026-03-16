@@ -8,7 +8,7 @@ UDP server installation for ZIVPN Tunnel (SSH/DNS) VPN app.
 #### Instalation Menu
 
 ```
-bash <(curl -fsSL [https://raw.githubusercontent.com/powermx/zivpn/main/menuzivpn](https://raw.githubusercontent.com/JotchuaDevz/UDP-ZIVPN-MOD/refs/heads/main/menuzivpn.sh))
+bash <(curl -fsSL https://raw.githubusercontent.com/JotchuaDevz/UDP-ZIVPN-MOD/refs/heads/main/menuzivpn.sh)
 ```
 #### ZIVPN-MOD v1
 
