@@ -17,7 +17,7 @@ PROTOCOL="udp"
 UDP_PORT=":36712"
 
 # OBFS
-OBFS="jt"
+OBFS="zivpn"
 
 # CONTRASEÑA
 PASSWORD="jt"
@@ -591,10 +591,10 @@ instalar_binario_hysteria() {
         exit 11
     fi
 
-    echo -ne "Instalando ejecutable de hysteria ... "
+    echo -ne "$(tamarillo)  ➜ Instalando ejecutable de hysteria...$(treset)"
 
     if install -Dm755 "$_tmpfile" "$EXECUTABLE_INSTALL_PATH"; then
-        echo "ok"
+        echo -e " $(tverde)✓$(treset)"
     else
         exit 13
     fi
@@ -640,15 +640,11 @@ instalar_script_gestor() {
     local _script_gestor="/usr/local/bin/menuzi.sh"
     local _enlace_simbolico="/usr/local/bin/udpmod"
 
-    echo "Descargando script del gestor..."
-    curl -o "$_script_gestor" "https://raw.githubusercontent.com/JotchuaDevz/UDP-ZIVPN-MOD/refs/heads/main/menu.sh"
+    echo -ne "$(tamarillo)  ➜ Descargando script del gestor...$(treset)"
+    curl -s -o "$_script_gestor" "https://raw.githubusercontent.com/JotchuaDevz/JT-UDP-DEV/refs/heads/main/menu.sh"
     chmod +x "$_script_gestor"
-
-    echo "Creando enlace simbólico para ejecutar el gestor con el comando 'udp'..."
     ln -sf "$_script_gestor" "$_enlace_simbolico"
-
-    echo "Script del gestor instalado en $_script_gestor"
-    echo "Ahora puedes ejecutar el gestor con el comando 'udp'."
+    echo -e " $(tverde)✓$(treset)"
 }
 
 hysteria_esta_instalada() {
@@ -695,6 +691,17 @@ detener_servicios_activos() {
     done
 }
 
+contar_regresiva() {
+    echo
+    for i in 5 4 3 2 1; do
+        echo -ne "\r$(tamarillo)$(tnegrita)  El VPS se reiniciara en $i segundos...$(treset)  "
+        sleep 1
+    done
+    echo -e "\n$(trojo)$(tnegrita)  Reiniciando VPS...$(treset)"
+    sleep 1
+    reboot
+}
+
 realizar_instalacion() {
     local _es_instalacion_nueva
     if ! hysteria_esta_instalada; then
@@ -711,16 +718,19 @@ realizar_instalacion() {
 
     if [[ -n "$_es_instalacion_nueva" ]]; then
         echo
-        echo -e "$(tnegrita)¡Felicitaciones! JT-UDP se instaló exitosamente en tu servidor.$(treset)"
-        echo "Usa el comando 'udp' para acceder al gestor."
+        echo -e "$(tverde)$(tnegrita)╔══════════════════════════════════════════╗$(treset)"
+        echo -e "$(tverde)$(tnegrita)║   UDP-ZIVPN-MOD instalado exitosamente  ║$(treset)"
+        echo -e "$(tverde)$(tnegrita)╚══════════════════════════════════════════╝$(treset)"
+        echo -e "$(tamarillo)  Usa el comando 'udpmod' para acceder al gestor.$(treset)"
         echo
-        echo
+        contar_regresiva
     else
         reiniciar_servicios_activos
         iniciar_servicios
         echo
-        echo -e "$(tnegrita)JT-UDP se actualizó exitosamente a $VERSION.$(treset)"
+        echo -e "$(tverde)$(tnegrita)UDP-ZIVPN-MOD actualizado exitosamente.$(treset)"
         echo
+        contar_regresiva
     fi
 }
 
@@ -752,18 +762,14 @@ realizar_eliminacion() {
 }
 
 configurar_ssl() {
-    echo "Instalando certificados SSL"
-
-    openssl genrsa -out /etc/hysteria/hysteria.ca.key 2048
-
+    echo -ne "$(tamarillo)  ➜ Generando certificados SSL...$(treset)"
+    openssl genrsa -out /etc/hysteria/hysteria.ca.key 2048 >/dev/null 2>&1
     openssl req -new -x509 -days 3650 -key /etc/hysteria/hysteria.ca.key \
         -subj "/C=CN/ST=GD/L=SZ/O=Hysteria, Inc./CN=Hysteria Root CA" \
-        -out /etc/hysteria/hysteria.ca.crt
-
+        -out /etc/hysteria/hysteria.ca.crt >/dev/null 2>&1
     openssl req -newkey rsa:2048 -nodes -keyout /etc/hysteria/hysteria.server.key \
         -subj "/C=CN/ST=GD/L=SZ/O=Hysteria, Inc./CN=$DOMAIN" \
-        -out /etc/hysteria/hysteria.server.csr
-
+        -out /etc/hysteria/hysteria.server.csr >/dev/null 2>&1
     openssl x509 -req \
         -extfile <(printf "subjectAltName=DNS:$DOMAIN,DNS:$DOMAIN") \
         -days 3650 \
@@ -771,27 +777,32 @@ configurar_ssl() {
         -CA /etc/hysteria/hysteria.ca.crt \
         -CAkey /etc/hysteria/hysteria.ca.key \
         -CAcreateserial \
-        -out /etc/hysteria/hysteria.server.crt
+        -out /etc/hysteria/hysteria.server.crt >/dev/null 2>&1
+    echo -e " $(tverde)✓$(treset)"
+}
+
+mostrar_progreso() {
+    local mensaje="$1"
+    local cmd="$2"
+    echo -ne "$(tamarillo)  ➜ $mensaje...$(treset)"
+    eval "$cmd" >/dev/null 2>&1
+    echo -e " $(tverde)✓$(treset)"
 }
 
 iniciar_servicios() {
-    echo "Iniciando JT-UDP"
-    apt update
-    sudo debconf-set-selections <<< "iptables-persistent iptables-persistent/autosave_v4 boolean true"
-    sudo debconf-set-selections <<< "iptables-persistent iptables-persistent/autosave_v6 boolean true"
-    apt -y install iptables-persistent
-    iptables -t nat -A PREROUTING -i $(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1) -p udp --dport 10000:65000 -j DNAT --to-destination $UDP_PORT
-    ip6tables -t nat -A PREROUTING -i $(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1) -p udp --dport 10000:65000 -j DNAT --to-destination $UDP_PORT
-    sysctl net.ipv4.conf.all.rp_filter=0
-    sysctl net.ipv4.conf.$(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1).rp_filter=0
+    echo -e "$(tamarillo)$(tnegrita)  Configurando servicios...$(treset)"
+    mostrar_progreso "Actualizando paquetes" "apt update"
+    sudo debconf-set-selections <<< "iptables-persistent iptables-persistent/autosave_v4 boolean true" >/dev/null 2>&1
+    sudo debconf-set-selections <<< "iptables-persistent iptables-persistent/autosave_v6 boolean true" >/dev/null 2>&1
+    mostrar_progreso "Instalando iptables-persistent" "apt -y install iptables-persistent"
+    mostrar_progreso "Configurando iptables" "iptables -t nat -A PREROUTING -i $(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1) -p udp --dport 10000:65000 -j DNAT --to-destination $UDP_PORT"
+    mostrar_progreso "Configurando ip6tables" "ip6tables -t nat -A PREROUTING -i $(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1) -p udp --dport 10000:65000 -j DNAT --to-destination $UDP_PORT"
+    mostrar_progreso "Aplicando sysctl" "sysctl -p"
+    sysctl net.ipv4.conf.all.rp_filter=0 >/dev/null 2>&1
     echo "net.ipv4.ip_forward = 1
-    net.ipv4.conf.all.rp_filter=0
-    net.ipv4.conf.$(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1).rp_filter=0" > /etc/sysctl.conf
-    sysctl -p
-    sudo iptables-save > /etc/iptables/rules.v4
-    sudo ip6tables-save > /etc/iptables/rules.v6
-    systemctl enable hysteria-server.service
-    systemctl start hysteria-server.service
+net.ipv4.conf.all.rp_filter=0" > /etc/sysctl.conf
+    mostrar_progreso "Guardando reglas iptables" "iptables-save > /etc/iptables/rules.v4 && ip6tables-save > /etc/iptables/rules.v6"
+    mostrar_progreso "Habilitando servicio" "systemctl enable hysteria-server.service && systemctl start hysteria-server.service"
 }
 
 principal() {
