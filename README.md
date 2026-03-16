@@ -13,15 +13,15 @@ bash <(curl -fsSL [https://raw.githubusercontent.com/powermx/zivpn/main/menuzivp
 #### ZIVPN-MOD v1
 
 ```
-bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/ziv1.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/JotchuaDevz/UDP-ZIVPN-MOD/refs/heads/main/ziv1.sh)
 ```
 #### ZIVPN-MOD v2 AMD
 
 ```
-bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/ziv2.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/JotchuaDevz/UDP-ZIVPN-MOD/refs/heads/main/ziv2.sh)
 ```
 #### ZIVPN-MOD v2 ARM
 
 ```
-bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/ziv3.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/JotchuaDevz/UDP-ZIVPN-MOD/refs/heads/main/ziv2.sh)
 ``
